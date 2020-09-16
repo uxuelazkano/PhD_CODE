@@ -1,4 +1,4 @@
-#Script para anÃ¡lisis EPIC (usarse luego para calculo de edad biolÃ³gica)
+#Script para anÃ¡lisis EPIC 
 #No quitar XY por que hay algunos CpGs de estos cromosomas en los epigenetic clock
 
 
@@ -28,12 +28,6 @@ EWAS<- champ.load(directory = Directorio, method = "minfi", methValue = "B",
                   filterSNPs = FALSE, population = NULL, filterMultiHit = FALSE, 
                   filterXY = FALSE, force = TRUE, arraytype = "EPIC") 
 
-#Warning message:
-#  In knnimp(x, k, maxmiss = rowmax, maxp = maxp) :
-#  50 rows with more than 50 % entries missing;
-#mean imputation used for these rows
-#
-
 
 ## Cargar datos sin filtros #He cambiado el force a FALSE (con TRUE funciona), quitando method='minfi
 #EWAS<- champ.load(directory = Directorio, methValue = "B", 
@@ -41,27 +35,18 @@ EWAS<- champ.load(directory = Directorio, method = "minfi", methValue = "B",
 #                  detPcut = 0.05, filterBeads = FALSE, beadCutoff = 0.05, filterNoCG = FALSE, 
 #                  filterSNPs = FALSE, population = NULL, filterMultiHit = FALSE, 
 #                  filterXY = FALSE, force = TRUE, arraytype = "EPIC") 
-#
-#
-#table(colnames(EWAS$beta)==EWAS$pd$X)
 
-
+#Check for sex discrepancies
 pdf("EWAS_EPIC.pdf", 70, 50)
 mdsPlot(EWAS$mset, numPositions = 1000, sampNames=EWAS$pd$Sample_Name, sampGroups = EWAS$pd$SEX,
         legendPos = "bottomright" , main="Multidimensinal Scaling Sex")
 dev.off()
 
 
-#EstÃ¡ limpio el 
 #Hacemos QC plots de los datos cargados para ver el patr?n de metilaci?n
 
 champ.QC(beta= EWAS$beta, pheno= EWAS$pd$Sample_group, mdsPlot = TRUE, densityPlot = TRUE, dendrogram = FALSE, 
          PDFplot=TRUE, Rplot= TRUE, Feature.sel = "None", resultsDir= .)
-
-
-champ.QC(beta= EWAS$beta, pheno= EWAS$pd$Sample_group, mdsPlot = TRUE, densityPlot = TRUE, 
-         PDFplot=TRUE, Rplot= TRUE, Feature.sel = "None", resultsDir= Directorio_Results)
-
 
 
 ######################
@@ -85,7 +70,6 @@ EWAS_BQMI <- EWAS_BQMI [order(rownames(EWAS_BQMI)),] #Ordenas las columnas#
 
 
 
-
 #Ahora hay que juntar las tres Sample_Sheet, copiamos las tres sample sheet a la carpeta EWAS_TOTAL
 cp /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_450K/betas_45* /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_450K_TOTAL
 #Cambiar nombre al archivo
@@ -99,35 +83,16 @@ mv Sample_sheet_batch2_eliminados_05032020.csv Sample_sheet_batch2.csv
 cp /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_EPIC/Sample_sheet_batch3_eliminados_10032020.csv /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL
 #mv betas_EPIC_conXY.txt betas_450K_conXY.txt
 
-#Leer las tres sample sheet y asegurar que tienen ismas columnas con los mismos nombres
+#Leer las tres sample sheet y asegurar que tienen mismas columnas con los mismos nombres
 batch1 <-read.csv("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/Sample_sheet_batch1.csv", header=TRUE, dec=",")
 batch2 <-read.csv("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/Sample_sheet_batch2.csv", header=TRUE, dec=",")
 batch3 <-read.csv("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/Sample_sheet_batch3.csv", header=TRUE, dec=",")
 
 colnames(batch1) 
-#[1] "X"             "Sample_Name"   "SlideC"        "Slide"        
-#[5] "Array"         "id"            "extraccionDNA" "Lugar_ext2"   
-#[9] "lugar_extcod"  "batch"         "batch_noepic"  "partic"       
-#[13] "pheno"         "AGE"           "etoast"        "SEX"          
-#[17] "SMK"           "HTA"           "BMI"           "DM"           
-#[21] "DL"            "CI"            "nihini"        "alcoholisme"  
-#[25] "rankhist11"    "erankin"       "FA"            "etnia"        
-#[29] "nihalt"        "Sample_group" 
 
 colnames(batch2)
-#[1] "X"            "Sample_Name"  "Slide"        "Array"        "id"          
-#[6] "Lugar_ext2"   "lugar_extcod" "batch"        "batch_noepic" "partic"      
-#[11] "pheno"        "AGE"          "etoast"       "SEX"          "SMK"         
-#[16] "HTA"          "BMI"          "DM"           "DL"           "CI"          
-#[21] "nihini"       "alcoholisme"  "rankhist11"   "erankin"      "FA"          
-#[26] "etnia"        "nihalt"       "Sample_group"
 
 colnames(batch3)
-#[1] "Sample_Name"  "Slide"        "Array"        "Lugar_ext2"   "lugar_extcod"
-#[6] "batch"        "batch_noepic" "pheno"        "AGE"          "etoast"      
-#[11] "SEX"          "SMK"          "HTA"          "BMI"          "DM"          
-#[16] "DL"           "CI"           "nihini"       "alcoholisme"  "rankhist11"  
-#[21] "erankin"      "FA"           "etnia"        "nihalt"       "Sample_group"
 
 
 #Filter three tables to have same cols
@@ -137,12 +102,9 @@ batch3_clean <- batch3[, c("Sample_Name", "Slide","Array", "batch","AGE","SEX","
 
 total <- rbind(batch1_clean, batch2_clean, batch3_clean)
 
-
 write.csv(total,"Sample_sheet_general_1405.csv", row.names = FALSE)
 
 total <-read.csv("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/Sample_sheet_general_1405.csv", header=TRUE, dec=",")
-
-
 
 #Copiar archivos de betas conXY a EWAS_TOTAL
 cp /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_450K/betas_450K_batch1_conXY.txt /home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL
@@ -159,15 +121,10 @@ betas1<-data.frame(fread("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EW
 betas2<-data.frame(fread("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/betas_450K_batch2_conXY.txt"), row.names=1)
 betas3<-data.frame(fread("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/betas_EPIC_conXY.txt"), row.names=1)
 
-#betas1<-read.table("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/betas_450K_batch1_conXY.txt", row.names = 1)
-#betas2<-read.table("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/betas_450K_batch2_conXY.txt", row.names = 1)
-#betas3<-read.table("/home/isglobal.lan/ulazcano/data/ulazcano/data/EWAS/EWAS_TOTAL/betas_EPIC_conXY.txt", row.names = 1)
-
 #Hacer merge de los tres archivos con betas, cruzar y coger solo el del 450K (inner join)
 betas12<-merge(betas1, betas2, by="row.names")
 rownames(betas12)<-betas12[,1]
 betas12<-betas12[,-1]
-
 
 betas_total<-merge(betas12, betas3, by="row.names")
 rownames(betas_total)<-betas_total[,1]
@@ -176,41 +133,10 @@ betas_total<-betas_total[,-1]
 
 #Check if rownames in beta file same as sample_sheet file
 setdiff(colnames(betas_total), sampleshe$Sample_Name)
-#[1] "Row.names"           "9422491019_R05C02"   "9422491059_R05C01"
-#[4] "201004220150_R01C01" "201004220150_R02C01" "201004220150_R03C01"
-#[7] "201004220150_R04C01" "201004220150_R05C01" "201004220150_R06C01"
-#[10] "201004220150_R07C01" "201004220150_R08C01" "202262730079_R01C01"
-#[13] "202262730079_R03C01" "202262730079_R04C01" "202262730079_R07C01"
-#[16] "202262730102_R01C01" "202262730102_R02C01" "202262730102_R03C01"
-#[19] "202262730102_R07C01" "202262730194_R02C01"
 
 setdiff(total$Sample_Name, colnames(betas_total))
-#[1] "9611518007_R05C02"   "9610361002_R01C01"   "9610361002_R01C02"
-#[4] "9610361002_R03C01"   "9610361002_R03C02"   "9610361002_R05C01"
-#[7] "9610361002_R05C02"   "9610361002_R06C01"   "9610361002_R06C02"
-#[10] "9534104003_R01C02"   "9534104003_R04C02"   "9533774098_R05C01"
-#[13] "9533774096_R06C02"   "9533774085_R03C02"   "9533774070_R06C01"
-#[16] "9969489002_R01C01"   "9969489002_R02C01"   "9969489092_R02C02"
-#[19] "9969489092_R04C01"   "9969489116_R01C01"   "9969489116_R01C02"
-#[22] "9969489116_R02C01"   "9969489116_R02C02"   "9969489154_R01C01"
-#[25] "9969489154_R02C01"   "9969489154_R05C02"   "9969489156_R03C01"
-#[28] "9969489158_R02C02"   "9969489158_R03C02"   "9969489158_R04C01"
-#[31] "9969489158_R06C01"   "9969489161_R01C01"   "9969489161_R02C01"
-#[34] "9980092137_R01C01"   "9980092137_R02C01"   "9980092137_R04C02"
-#[37] "9980092137_R05C01"   "9980092137_R06C01"   "9980102002_R01C01"
-#[40] "9980102002_R02C01"   "9980102020_R01C02"   "9980102020_R02C01"
-#[43] "9980102020_R03C01"   "9980102020_R05C02"   "9980102020_R06C02"
-#[46] "9980102044_R01C01"   "9980102044_R04C02"   "9980102044_R05C01"
-#[49] "9980102044_R06C01"   "9980102075_R01C01"   "9980102075_R02C01"
-#[52] "9980102075_R03C01"   "9980102075_R04C01"   "9980102075_R05C02"
-#[55] "9980102075_R06C01"   "9980102075_R06C02"   "9980102107_R01C01"
-#[58] "9980102107_R02C01"   "200999660177_R07C01" "200999660184_R01C01"
-#[61] "200999660184_R07C01" "201004220078_R01C01" "201005010091_R07C01"
-#[64] "201005010132_R03C01" "201005010132_R05C01" "201005010132_R08C01"
-#[67] "201005010153_R02C01" "201005010153_R03C01" "201005010153_R06C01"
-#[70] "201005010153_R07C01" "201503670068_R03C01" "201503670103_R02C01"
-#[73] "201503670103_R03C01"x
 
+#Create groups of samples depending in the erankin
 total$Sample_group <- NA
 total$Sample_group<-ifelse(total$erankin%in%c(0,1,2),0,1)
 
@@ -231,7 +157,6 @@ destroyX(betas_GODS)
 #Limpiar sample_sheet
 samplesheet_clean<- total[(total$Sample_Name %in% colnames(betas_total)), ]
 write.table(samplesheet_clean, file = "Sample_Sheet_clean_1404.txt")
-
 
 
 #Ajustar betas por COMBAT para evitar 
@@ -257,7 +182,6 @@ save( COMBAT, file='EWAS_COMBAT_Slide.RData')
 ########## CONTAJE CELULAR  ###########
 #######################################
 
-#¡¡NO HACER EN EL EWAS DE PRUEBA PORQUE NO ES SANGRE TOTAL!!#
 #CALCULAMOS EL CONTAJE CELULAR 
 
 EWAS_CelType<-champ.refbase(beta=COMBAT, arraytype = "450K" )
@@ -304,7 +228,7 @@ betas_GODS<-t(transpose_betas_clean)
 write.table(betas_GODS, file = "betas_GODS_conXY_normSlide.txt")
 
 #Limpiar sample sheet para quitar los que caen por QC
-#Filtrar sample sheet para quitar los que caen por QC y por lo tanto no están en la tabla d ebetas
+#Filtrar sample sheet para quitar los que caen por QC y por lo tanto no están en la tabla debetas
 samplesheet_clean<- sample_sheet[(row.names(sample_sheet) %in% colnames(betas_GODS)), ]
 
 #Dicotomizar pacientes por erankin 
@@ -395,19 +319,7 @@ manifest_GODS<-data.frame(fread("/home/isglobal.lan/ulazcano/data/ulazcano/data/
 ###############
 #Modelo lineal#
 ###############
-
-
-#####EJEMPLO JARA######
-
-for(i in seq(1:404900))
-{
-  resultados[i,19]<-data.frame(summary(glm(formula= as.numeric(PD$Slide) ~ as.numeric(EWAS_BQMI[i,]) +
-                                             PCA_values$Comp.1 + CONTAJE$Bcell +  CONTAJE$Mono  + CONTAJE$Gran + CONTAJE$CD4T 
-  ))$coefficients)[2,4]
-}          
-#######################
-
-
+        
 
 manifest_GODS$Pvalue <- NA
 
@@ -476,7 +388,6 @@ write.table(top15_lineal, file = "top15_1_2.txt")
 
 
 #Repetir binomial y lineal ajustando también por ranhist y nihalt
-
 
 #Model 2.1
 
